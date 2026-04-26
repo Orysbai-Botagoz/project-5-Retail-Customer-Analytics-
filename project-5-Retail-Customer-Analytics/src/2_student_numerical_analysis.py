@@ -49,7 +49,7 @@ def run_numpy_analysis():
         print(f"Индексы первых 10: {high_value_indices[:10]}")[cite: 74]
 
     except FileNotFoundError:
-        print("Ошибка: Файл с данными не найден. Подожди, пока Студент 1 загрузит его.")
+        print("")
     except Exception as e:
         print(f"Произошла ошибка: {e}")
 
