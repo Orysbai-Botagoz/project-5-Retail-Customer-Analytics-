@@ -6,7 +6,7 @@ def run_numpy_analysis():
     try:
         # 1. Загружаем данные (предположим, Студент 1 сохранит их в этот файл)
         # Если файл называется иначе, просто поменяй название тут
-        df = pd.read_csv('../data/retail_customer_loyalty_realistic.csv')
+        df = pd.read_csv('retail_customer_loyalty_realistic.csv')
         print("NumPy анализі үшін деректер сәтті жүктелді.")
 
         # ЗАДАЧА 1: Преобразование в числовые массивы [cite: 64]

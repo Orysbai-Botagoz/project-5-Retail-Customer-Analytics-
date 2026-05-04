@@ -1,5 +1,5 @@
 import pandas as pd
-
+#1 task
 # 1. Excel немесе CSV файлын жүктеу (сенің файлың CSV форматында екен)
 file_path = '../data/retail_customer_loyalty_realistic.csv'
 
@@ -8,7 +8,7 @@ with open(file_path, 'r', encoding='utf-8') as f:
 
 # 2. Алғашқы 10 жолды шығару
 print("--- 1. Деректердің алғашқы 10 жолы ---")
-display(df.head(10))
+print(df.head(10))
 
 # 3. Жолдар мен бағандар санын анықтау
 rows, cols = df.shape
