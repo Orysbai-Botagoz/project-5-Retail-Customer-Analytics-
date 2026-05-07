@@ -1,4 +1,6 @@
-#1 task
+                                                                                   #task 1
+
+
 import pandas as pd
 import math
 import os
@@ -57,7 +59,9 @@ print("Топ-10 аномальных клиентов:")
 print(anomalies[['customer_id', 'total_spent', 'loyalty_score']].head(10))
 
 
-#task 2
+                                                                       #task 2
+
+
 import pandas as pd
 
 # 1. Сортировка DataFrame по стажу членства
@@ -84,7 +88,9 @@ print(f"Первые 10 значений скользящего среднего
 print(rolling_averages[:10])
 
 
-#task 3
+                                                                           #task 3
+
+
 import pandas as pd
 import numpy as np
 
@@ -121,7 +127,9 @@ for cid, d in top_5_neighbors:
 
 
 
-#task4
+                                                                      #task4
+
+
 import pandas as pd
 
 
@@ -146,7 +154,58 @@ df['recommendation'] = df.apply(get_recommendation, axis=1)
 # 3. Вывод результатов для проверки
 print("Примеры рекомендаций для клиентов:")
 print(df[['customer_id', 'preferred_category', 'total_spent', 'purchase_frequency', 'recommendation']].head(10))
-
 # Статистика по рекомендациям
 print("\nРаспределение рекомендаций:")
-print(df['recommendation'].value_counts())
+
+import pandas as pd
+
+# Предположим, DataFrame (df) уже загружен на предыдущих этапах
+# Ниже приведен пример реализации системы правил (Rule Engine)
+
+## 1. Определение набора правил (Functions)
+def rule_premium_offer(row):
+    """Правило для предложения премиум-товаров"""
+    if row['total_spent'] > 5000 and row['loyalty_score'] > 80:
+        return "Offer Premium Membership"
+    return None
+
+def rule_retention_campaign(row):
+    """Правило для удержания (высокий риск оттока)"""
+    if row['purchase_frequency'] < 2 and row['loyalty_score'] < 40:
+        return "Send Retention Discount"
+    return None
+
+def rule_cross_sell_electronics(row):
+    """Правило кросс-продаж электроники"""
+    if row['preferred_category'] == 'Electronics' and row['avg_purchase_value'] > 200:
+        return "Suggest New Gadgets"
+    return None
+
+def rule_default_action(row):
+    """Действие по умолчанию"""
+    return "Standard Newsletter"
+
+## 2. Формирование списка правил
+rules = [
+    rule_premium_offer,
+    rule_retention_campaign,
+    rule_cross_sell_electronics,
+    rule_default_action
+]
+
+## 3. Применение правил через цикл
+def apply_rules(row):
+    for rule in rules:
+        action = rule(row)
+        if action:  # Возвращаем первое сработавшее правило
+            return action
+    return "No Action"
+
+# Создание новой колонки с результатами работы Rule Engine
+df['marketing_action'] = df.apply(apply_rules, axis=1)
+
+## 4. Вывод результатов
+print("Распределение действий маркетинга:")
+print(df['marketing_action'].value_counts())
+print("\nПримеры назначенных действий для первых 10 клиентов:")
+print(df[['customer_id', 'total_spent', 'loyalty_score', 'marketing_action']].head(10))
