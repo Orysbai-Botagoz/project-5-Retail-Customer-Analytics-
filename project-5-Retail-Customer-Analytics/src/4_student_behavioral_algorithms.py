@@ -14,6 +14,7 @@ if not os.path.exists(file_name):
         # Если и так не нашли, пробуем выйти на уровень выше (на случай запуска из src)
         file_name = os.path.join('..', 'src', 'retail_customer_loyalty_realistic.csv')
 
+
 try:
     df = pd.read_csv(file_name)
     print(f"✅ Файл успешно загружен из: {file_name}")
