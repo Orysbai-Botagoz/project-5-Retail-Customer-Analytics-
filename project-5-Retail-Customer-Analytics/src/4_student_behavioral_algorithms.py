@@ -1,4 +1,6 @@
-#1 task
+                                                                                   #task 1
+
+
 import pandas as pd
 import math
 import os
@@ -55,3 +57,155 @@ print("-" * 50)
 print(f"Найдено аномальных записей: {len(anomalies)}")
 print("Топ-10 аномальных клиентов:")
 print(anomalies[['customer_id', 'total_spent', 'loyalty_score']].head(10))
+
+
+                                                                       #task 2
+
+
+import pandas as pd
+
+# 1. Сортировка DataFrame по стажу членства
+df_sorted = df.sort_values(by='membership_years').reset_index(drop=True)
+
+# 2. Параметры скользящего окна
+window_size = 10
+rolling_averages = []
+
+# 3. Реализация скользящего окна через цикл
+# Проходим от 0 до (общее кол-во строк - размер окна + 1)
+for i in range(len(df_sorted) - window_size + 1):
+    # Выделяем текущее "окно" данных
+    window = df_sorted.iloc[i: i + window_size]
+
+    # Вычисляем среднюю частоту покупок в этом окне
+    avg_freq = window['purchase_frequency'].mean()
+
+    # 4. Сохраняем результат в список
+    rolling_averages.append(avg_freq)
+
+# Вывод первых 10 результатов скользящего среднего
+print(f"Первые 10 значений скользящего среднего (окно {window_size}):")
+print(rolling_averages[:10])
+
+
+                                                                           #task 3
+
+
+import pandas as pd
+import numpy as np
+
+# 1. Выбираем признаки для расчета
+features = ['total_spent', 'loyalty_score', 'purchase_frequency']
+target_client = df.iloc[0]  # Первый клиент
+distances = []
+
+# 2. Проходим через цикл для вычисления расстояний до всех остальных
+for index, row in df.iterrows():
+    if index == 0:
+        continue  # Пропускаем сравнение клиента с самим собой
+
+    # Вычисляем Евклидово расстояние вручную [cite: 200]
+    dist = np.sqrt(
+        (target_client['total_spent'] - row['total_spent']) ** 2 +
+        (target_client['loyalty_score'] - row['loyalty_score']) ** 2 +
+        (target_client['purchase_frequency'] - row['purchase_frequency']) ** 2
+    )
+
+    distances.append((row['customer_id'], dist))
+
+# 3. Сортируем список по расстоянию (от меньшего к большему)
+distances.sort(key=lambda x: x[1])
+
+# 4. Находим 5 ближайших клиентов
+top_5_neighbors = distances[:5]
+
+print(f"Поиск похожих клиентов для ID: {target_client['customer_id']}")
+print("-" * 30)
+for cid, d in top_5_neighbors:
+    print(f"Customer ID: {cid} | Расстояние: {round(d, 4)}")  #
+
+
+
+
+                                                                      #task4
+
+
+import pandas as pd
+
+
+# 1. Определяем функцию рекомендаций на основе бизнес-логики
+def get_recommendation(row):
+    # Условие для премиальной электроники
+    if row['preferred_category'] == 'Electronics' and row['total_spent'] > 5000:
+        return 'Premium Electronics'
+
+    # Условие для активных покупателей (например, частота выше 10 покупок)
+    # Порог частоты можно адаптировать под медиану вашего датасета
+    if row['purchase_frequency'] > 10:
+        return 'Discount Campaign'
+
+    # Рекомендация по умолчанию
+    return 'Standard Offer'
+
+
+# 2. Создаем новую колонку, применяя функцию к каждой строке
+df['recommendation'] = df.apply(get_recommendation, axis=1)
+
+# 3. Вывод результатов для проверки
+print("Примеры рекомендаций для клиентов:")
+print(df[['customer_id', 'preferred_category', 'total_spent', 'purchase_frequency', 'recommendation']].head(10))
+# Статистика по рекомендациям
+print("\nРаспределение рекомендаций:")
+
+import pandas as pd
+
+# Предположим, DataFrame (df) уже загружен на предыдущих этапах
+# Ниже приведен пример реализации системы правил (Rule Engine)
+
+## 1. Определение набора правил (Functions)
+def rule_premium_offer(row):
+    """Правило для предложения премиум-товаров"""
+    if row['total_spent'] > 5000 and row['loyalty_score'] > 80:
+        return "Offer Premium Membership"
+    return None
+
+def rule_retention_campaign(row):
+    """Правило для удержания (высокий риск оттока)"""
+    if row['purchase_frequency'] < 2 and row['loyalty_score'] < 40:
+        return "Send Retention Discount"
+    return None
+
+def rule_cross_sell_electronics(row):
+    """Правило кросс-продаж электроники"""
+    if row['preferred_category'] == 'Electronics' and row['avg_purchase_value'] > 200:
+        return "Suggest New Gadgets"
+    return None
+
+def rule_default_action(row):
+    """Действие по умолчанию"""
+    return "Standard Newsletter"
+
+## 2. Формирование списка правил
+rules = [
+    rule_premium_offer,
+    rule_retention_campaign,
+    rule_cross_sell_electronics,
+    rule_default_action
+]
+
+## 3. Применение правил через цикл
+def apply_rules(row):
+    for rule in rules:
+        action = rule(row)
+        if action:  # Возвращаем первое сработавшее правило
+            return action
+    return "No Action"
+
+# Создание новой колонки с результатами работы Rule Engine
+df['marketing_action'] = df.apply(apply_rules, axis=1)
+
+## 4. Вывод результатов
+print("Распределение действий маркетинга:")
+print(df['marketing_action'].value_counts())
+print("\nПримеры назначенных действий для первых 10 клиентов:")
+print(df[['customer_id', 'total_spent', 'loyalty_score', 'marketing_action']].head(10))
