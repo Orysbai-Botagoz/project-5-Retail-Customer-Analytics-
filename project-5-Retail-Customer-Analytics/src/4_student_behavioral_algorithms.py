@@ -516,6 +516,7 @@ print(f"   Размер:     {top_size_kb:.1f} КБ")
 new_columns = ['client_score', 'spend_per_purchase', 'return_ratio', 'engagement_score_custom']
 present = [col for col in new_columns if col in df.columns]
 
+
 print(f"\n📊 Созданные признаки в итоговом файле:")
 print("-" * 50)
 for col in present:
