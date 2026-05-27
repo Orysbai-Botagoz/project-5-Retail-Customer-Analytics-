@@ -3,6 +3,8 @@ import pandas as pd
 import logging
 from abc import ABC, abstractmethod
 import time
+import pandas as pd
+import seaborn as sns
 
 # task7
 logging.basicConfig(  # чтобы записывалось все и в случае ошибки найти
@@ -224,7 +226,59 @@ class RetailAnalytics:
         print(f" Общая суммарная ценность (с кэшем):  {total_system_value:,.2f}")
         print(f" Файл с результатами сохранен как:   {output_filename}")
         print("=" * 50 + "\n")
-        return self
+        # =========================================================
+        # ВИЗУАЛИЗАЦИЯ ДЛЯ ПРЕЗЕНТАЦИИ (Seaborn + Matplotlib)
+        # =========================================================
+        try:
+            import matplotlib.pyplot as plt
+            import seaborn as sns
+
+            # Устанавливаем стильный вид графиков
+            sns.set_theme(style="darkgrid")
+            fig, axes = plt.subplots(1, 2, figsize=(15, 6))
+            fig.suptitle('Анализ клиентской базы: Результаты работы пайплайна', fontsize=16, fontweight='bold')
+
+            # График 1: Распределение ценности клиентов (Value)
+            sns.histplot(
+                data=self.df,
+                x='client_value',
+                bins=20,
+                kde=True,
+                color='#2b7bba',
+                ax=axes[0]
+            )
+            axes[0].axvline(CONFIG['vip_threshold'], color='red', linestyle='--', linewidth=2,
+                            label='Порог VIP (CONFIG)')
+            axes[0].set_title('Распределение ценности клиентов', fontsize=12)
+            axes[0].set_xlabel('Метрика Client Value (Траты × Лояльность)', fontsize=10)
+            axes[0].set_ylabel('Количество клиентов (Частота)', fontsize=10)
+            axes[0].legend()
+
+            # График 2: Матрица Трат и Лояльности с подсветкой Рисков
+            sns.scatterplot(
+                data=self.df,
+                x='total_spent',
+                y='loyalty_score',
+                hue='client_risk',
+                palette='coolwarm',
+                size='purchase_frequency',
+                sizes=(20, 200),
+                ax=axes[1]
+            )
+            axes[1].set_title('Зависимость Трат от Лояльности и Уровень Риска', fontsize=12)
+            axes[1].set_xlabel('Сумма трат (Total Spent)', fontsize=10)
+            axes[1].set_ylabel('Баллы лояльности (Loyalty Score)', fontsize=10)
+            axes[1].legend(title='Риск ухода / Частота покупок', loc='upper left')
+
+            # Сохраняем и показываем
+            plt.tight_layout()
+            plt.savefig('presentation_charts.png', dpi=300)
+            plt.show()
+            logging.info("--- Графики для презентации успешно сохранены в файл presentation_charts.png ---")
+
+        except ImportError:
+            logging.warning("Для вывода графиков установи библиотеки: pip install matplotlib seaborn")
+
 
     # =========================================================
     # ТОЧКА ВХОДА (ЗАПУСК ВСЕХ ТЕСТОВ И ФИНАЛЬНОГО ПАЙПЛАЙНА)
@@ -345,3 +399,5 @@ if __name__ == "__main__":
     # --- ФИНАЛЬНЫЙ ЗАПУСК ЗАДАЧИ №10 (ПОЛНЫЙ ПАЙПЛАЙН) ---
     final_system = RetailAnalytics(path_to_csv)
     final_system.run_full_pipeline('final_production_report.csv')
+
+
