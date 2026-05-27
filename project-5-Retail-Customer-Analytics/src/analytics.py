@@ -21,10 +21,10 @@ logging.basicConfig(  # чтобы записывалось все и в слу�
 # Задача 8 — Словарь конфигурации (Глобальные настройки)
 # =========================================================
 CONFIG = {
-    'vip_threshold': 150000,       # Порог для фильтрации VIP в пайплайне
+    'vip_threshold': 500000,       # Порог для фильтрации VIP в пайплайне
     'vip_bonus_coeff': 1.15,       # Бонус-коэффициент для ценности VIP-клиента (был 1.1)
-    'factory_vip_loyalty': 80,     # Порог лояльности в фабрике для перевода в VIP
-    'factory_vip_spent': 7000       # Порог трат в фабрике для перевода в VIP
+    'factory_vip_loyalty': 85,     # Порог лояльности в фабрике для перевода в VIP
+    'factory_vip_spent': 8000       # Порог трат в фабрике для перевода в VIP
 }
 
 # task1
@@ -151,7 +151,7 @@ class RetailAnalytics:
         initial_count = len(self.df)
         self.df = self.df.drop_duplicates()
         self.df = self.df.fillna(0)
-        logging.info(f"--- Очистка завершена. Удалено строк: {initial_count - len(self.df)} ---")  # Исправлено на INFO
+        logging.info(f"--- Очистка завершена. Удалено строк: {initial_count - len(self.df)} ---")
         return self
 
     def basic_stats(self):
