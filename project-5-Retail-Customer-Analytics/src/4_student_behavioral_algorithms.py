@@ -1,4 +1,4 @@
-                                                                                   #task 1
+#task 1
 
 
 import pandas as pd
@@ -57,7 +57,8 @@ print("-" * 50)
 print(f"Найдено аномальных записей: {len(anomalies)}")
 print("Топ-10 аномальных клиентов:")
 print(anomalies[['customer_id', 'total_spent', 'loyalty_score']].head(10))
-
+import matplotlib.pyplot as plt
+import seaborn as sns
 
                                                                        #task 2
 
@@ -86,6 +87,8 @@ for i in range(len(df_sorted) - window_size + 1):
 # Вывод первых 10 результатов скользящего среднего
 print(f"Первые 10 значений скользящего среднего (окно {window_size}):")
 print(rolling_averages[:10])
+
+
 
 
                                                                            #task 3
@@ -122,7 +125,7 @@ top_5_neighbors = distances[:5]
 print(f"Поиск похожих клиентов для ID: {target_client['customer_id']}")
 print("-" * 30)
 for cid, d in top_5_neighbors:
-    print(f"Customer ID: {cid} | Расстояние: {round(d, 4)}")  #
+    print(f"Customer ID: {cid} | Расстояние: {round(d, 4)}")
 
 
 
@@ -156,11 +159,6 @@ print("Примеры рекомендаций для клиентов:")
 print(df[['customer_id', 'preferred_category', 'total_spent', 'purchase_frequency', 'recommendation']].head(10))
 # Статистика по рекомендациям
 print("\nРаспределение рекомендаций:")
-
-import pandas as pd
-
-# Предположим, DataFrame (df) уже загружен на предыдущих этапах
-# Ниже приведен пример реализации системы правил (Rule Engine)
 
 ## 1. Определение набора правил (Functions)
 def rule_premium_offer(row):
@@ -239,6 +237,43 @@ if 'return_ratio' not in df.columns:
     df['return_ratio'] = df['returns_count'] / (df['purchase_frequency'] + 1)
 
 
+
+# ==============================================================================
+# ЗАДАНИЕ 5 — Feature Engineering и анализ производных метрик
+# Цель: Создать новые аналитические признаки и изучить их распределение.
+# Алгоритмический акцент: создание комплексных показателей на основе нескольких колонок.
+# ==============================================================================
+
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# 1. Расчет новых признаков (логика студента 4)
+# Добавляем +1 к знаменателю, чтобы избежать ZeroDivisionError
+df['spend_per_purchase'] = df['total_spent'] / (df['purchase_frequency'] + 1)
+df['return_ratio'] = df['returns_count'] / (df['purchase_frequency'] + 1)
+
+# 2. Создание показателя цифровой вовлеченности (Engagement Score)
+# Считаем как среднее арифметическое активности в приложении и на сайте
+df['engagement_score_custom'] = (df['app_sessions_per_month'] + df['website_visits_per_month']) / 2
+
+print("\n" + "=" * 60)
+print("ЗАДАНИЕ 5 — Создание новых признаков")
+print("=" * 60)
+print("Новые метрики успешно добавлены:")
+print(df[['customer_id', 'spend_per_purchase', 'return_ratio', 'engagement_score_custom']].head())
+
+# --- ВИЗУАЛИЗАЦИЯ (Violin Plot) ---
+# Скрипичный график показывает плотность распределения среднего чека по категориям.
+# Это позволяет увидеть, где клиенты тратят больше за один раз.
+
+plt.figure(figsize=(12, 7))
+sns.violinplot(x='preferred_category', y='spend_per_purchase', data=df,
+               palette='muted', inner="quartile", hue='preferred_category', legend=False)
+
+
+
+
+
 # ══════════════════════════════════════════════════════════════════════════════
 # ЗАДАНИЕ 6 — Сортировка и ranking алгоритмы
 # Цель: создать колонку client_score и отсортировать DataFrame по ней.
@@ -293,6 +328,9 @@ manual_ids = list(top_20_manual['customer_id'])
 pandas_ids  = list(top_20_pandas['customer_id'])
 match = manual_ids == pandas_ids
 print(f"\n✅ Ручная сортировка совпадает с pandas: {match}")
+
+
+
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -355,6 +393,7 @@ print(f"   Экономия:                {size_list - size_gen:>8} байт")
 print(f"   Всего подходящих клиентов: {len(list_result)}")
 
 
+
 # ══════════════════════════════════════════════════════════════════════════════
 # ЗАДАНИЕ 8 — Ручная агрегация через циклы
 # Цель: city → суммарный total_spent, city → кол-во клиентов,
@@ -404,6 +443,10 @@ for city, avg in city_avg.items():
         mismatches += 1
 
 print(f"\n✅ Расхождений с pandas groupby: {mismatches} (0 = всё верно)")
+
+
+city_df = pd.DataFrame(sorted_cities, columns=['City', 'Avg_Spend'])
+city_df = city_df.set_index('City')
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -466,6 +509,12 @@ our_ids     = [cid for _, cid in top_5]
 pandas_ids  = list(pandas_top5['customer_id'])
 
 print(f"\n✅ Результат совпадает с pandas.nlargest: {our_ids == pandas_ids}")
+
+
+
+top5_df = pd.DataFrame(top_5, columns=['spent', 'id'])
+
+
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -553,3 +602,191 @@ for col in present:
 print(f"\n✅ Данные успешно подготовлены и сохранены!")
 print(f"   → {output_full} (полный датасет с новыми признаками)")
 print(f"   → {output_top} (топ-100 по client_score)")
+
+import pandas as pd
+import math
+import os
+import matplotlib.pyplot as plt
+import seaborn as sns
+import numpy as np
+import sys
+
+# Настройка стиля графиков
+sns.set_theme(style="whitegrid")
+plt.rcParams['figure.figsize'] = (10, 6)
+
+# 1. Загрузка данных
+file_name = 'retail_customer_loyalty_realistic.csv'
+if not os.path.exists(file_name):
+    file_name = os.path.join('src', 'retail_customer_loyalty_realistic.csv')
+    if not os.path.exists(file_name):
+        file_name = os.path.join('..', 'src', 'retail_customer_loyalty_realistic.csv')
+
+try:
+    df = pd.read_csv(file_name)
+    print(f" ✅ Файл успешно загружен")
+except FileNotFoundError:
+    print(" ❌ Ошибка: Не удалось найти CSV-файл.")
+    exit()
+
+# ==============================================================================
+# ЗАДАНИЕ 1 — Алгоритмический поиск аномалий
+# ==============================================================================
+total_spent_sum = 0
+for val in df['total_spent']:
+    total_spent_sum += val
+mean_spent = total_spent_sum / len(df)
+
+sum_sq_diff = 0
+for val in df['total_spent']:
+    sum_sq_diff += (val - mean_spent) ** 2
+std_dev = math.sqrt(sum_sq_diff / len(df))
+
+lower_bound = mean_spent - 2 * std_dev
+upper_bound = mean_spent + 2 * std_dev
+anomalies = df[(df['total_spent'] < lower_bound) | (df['total_spent'] > upper_bound)]
+
+# ГРАФИК 1: Гистограмма распределения трат с границами аномалий
+plt.figure()
+sns.histplot(df['total_spent'], kde=True, color='skyblue')
+plt.axvline(lower_bound, color='red', linestyle='--', label='Нижняя граница (2σ)')
+plt.axvline(upper_bound, color='red', linestyle='--', label='Верхняя граница (2σ)')
+plt.title('Задание 1: Алгоритмический поиск аномалий в тратах')
+plt.legend()
+plt.show()
+
+# ==============================================================================
+# ЗАДАНИЕ 2 — Скользящее среднее
+# ==============================================================================
+df_sorted = df.sort_values(by='membership_years').reset_index(drop=True)
+window_size = 50  # Увеличим окно для наглядности графика
+rolling_averages = df_sorted['purchase_frequency'].rolling(window=window_size).mean()
+
+# ГРАФИК 2: Линейный график скользящего среднего
+plt.figure()
+plt.plot(df_sorted.index, df_sorted['purchase_frequency'], alpha=0.3, label='Оригинал', color='gray')
+plt.plot(df_sorted.index, rolling_averages, color='blue', linewidth=2, label=f'Скользящее среднее (окно {window_size})')
+plt.title('Задание 2: Тренд частоты покупок (Скользящее среднее)')
+plt.xlabel('Клиенты (отсортированы по стажу)')
+plt.legend()
+plt.show()
+
+# ==============================================================================
+# ЗАДАНИЕ 3 — Поиск похожих клиентов (Евклидово расстояние)
+# ==============================================================================
+target_client = df.iloc[0]
+distances = []
+for index, row in df.head(500).iterrows(): # Для примера берем первые 500
+    if index == 0: continue
+    dist = np.sqrt((target_client['total_spent'] - row['total_spent'])**2 +
+                   (target_client['loyalty_score'] - row['loyalty_score'])**2)
+    distances.append((row['customer_id'], dist))
+
+distances.sort(key=lambda x: x[1])
+top_5 = distances[:5]
+ids, dists = zip(*top_5)
+
+# ГРАФИК 3: Расстояния до ближайших соседей
+plt.figure()
+sns.barplot(x=list(ids), y=list(dists), palette='viridis')
+plt.title(f'Задание 3: Топ-5 похожих клиентов для {target_client["customer_id"]}')
+plt.ylabel('Евклидово расстояние')
+plt.show()
+
+# ==============================================================================
+# ЗАДАНИЕ 4 — Рекомендательная система (Rule Engine)
+# ==============================================================================
+def apply_rules(row):
+    if row['total_spent'] > 5000 and row['loyalty_score'] > 80: return "Premium Offer"
+    if row['purchase_frequency'] < 2: return "Retention Discount"
+    return "Standard News"
+
+df['marketing_action'] = df.apply(apply_rules, axis=1)
+
+# ГРАФИК 4: Распределение маркетинговых стратегий
+plt.figure()
+df['marketing_action'].value_counts().plot(kind='pie', autopct='%1.1f%%', colors=sns.color_palette('pastel'))
+plt.title('Задание 4: Результат работы Rule Engine')
+plt.ylabel('')
+plt.show()
+
+# ==============================================================================
+# ЗАДАНИЕ 5 — Feature Engineering
+# ==============================================================================
+df['spend_per_purchase'] = df['total_spent'] / (df['purchase_frequency'] + 1)
+
+# ГРАФИК 5: Скрипичный график (Violin Plot) распределения новой метрики
+plt.figure()
+sns.violinplot(x='preferred_category', y='spend_per_purchase', data=df, palette='muted')
+plt.title('Задание 5: Распределение среднего чека по категориям')
+plt.xticks(rotation=45)
+plt.show()
+
+# ==============================================================================
+# ЗАДАНИЕ 6 — Ranking (Top-20)
+# ==============================================================================
+df['client_score'] = (df['total_spent'] * 0.5) + (df['loyalty_score'] * 0.3)
+top_20 = df.sort_values(by='client_score', ascending=False).head(20)
+
+# ГРАФИК 6: Горизонтальный столбчатый график топ-клиентов
+plt.figure()
+sns.barplot(x='client_score', y='customer_id', data=top_20, palette='magma')
+plt.title('Задание 6: Рейтинг Топ-20 клиентов (Client Score)')
+plt.show()
+
+# ==============================================================================
+# ЗАДАНИЕ 7 — Генераторы и память
+# ==============================================================================
+def generator_shoppers(dataframe):
+    for _, row in dataframe.iterrows():
+        if row['online_shopper']: yield row
+
+gen = generator_shoppers(df)
+list_res = [row for _, row in df[df['online_shopper']].iterrows()]
+sizes = {'Список': sys.getsizeof(list_res), 'Генератор': sys.getsizeof(gen)}
+
+# ГРАФИК 7: Сравнение потребления памяти
+plt.figure()
+sns.barplot(x=list(sizes.keys()), y=list(sizes.values()), palette='coolwarm')
+plt.title('Задание 7: Сравнение потребления памяти (байт)')
+plt.show()
+
+# ==============================================================================
+# ЗАДАНИЕ 8 — Агрегация по городам (Manual)
+# ==============================================================================
+city_spent = df.groupby('city')['total_spent'].sum().sort_values(ascending=False)
+
+# ГРАФИК 8: Суммарные траты по городам
+plt.figure()
+city_spent.plot(kind='bar', color='teal')
+plt.title('Задание 8: Общие траты клиентов по городам')
+plt.ylabel('Total Spent')
+plt.show()
+
+# ==============================================================================
+# ЗАДАНИЕ 9 — Адаптивные пороги
+# ==============================================================================
+threshold = df['total_spent'].mean() + df['total_spent'].std()
+top_clients = df[df['total_spent'] > threshold]
+
+# ГРАФИК 9: Распределение "Элитных" клиентов vs Остальные
+plt.figure()
+df['is_elite'] = df['total_spent'] > threshold
+sns.boxplot(x='is_elite', y='total_spent', data=df, palette='Set2')
+plt.title('Задание 9: Сравнение трат элитных клиентов и остальных')
+plt.show()
+
+# ==============================================================================
+# ЗАДАНИЕ 10 — Сохранение и итоги
+# ==============================================================================
+output_file = 'top_100_clients.csv'
+df.head(100).to_csv(output_file, index=False)
+file_size = os.path.getsize(output_file) / 1024
+
+# ГРАФИК 10: Финальная статистика (Количество клиентов по сегментам в ТОП-100)
+plt.figure()
+sns.countplot(x='customer_segment', data=df.head(100), palette='viridis')
+plt.title('Задание 10: Состав Топ-100 клиентов по сегментам')
+plt.show()
+
+print("\n ✅ Все задания выполнены, графики построены.")
